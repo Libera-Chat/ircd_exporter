@@ -233,8 +233,8 @@ func (c *Client) doConnection() {
 				}
 				// Get stats from services
 				inCh <- &irc.Message{
-					Command: irc.STATS,
-					Params:  []string{"t", "OperServ"},
+					Command: irc.MOTD,
+					Params:  []string{"OperServ"},
 				}
 				if len(req.Nicks) > 0 {
 					inCh <- &irc.Message{
