@@ -197,7 +197,10 @@ func (c *Client) doConnection() {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					_ = s
 					if ok {
-						fmt.Printf("%q\n", servicesRE.FindSubmatch([]byte(m.Params[1])))
+						srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
+						if srm != nil {
+							fmt.Println(srm[2])
+						}
 					}
 				}
 
