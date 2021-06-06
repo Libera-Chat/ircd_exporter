@@ -196,7 +196,6 @@ func (c *Client) doConnection() {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
 						fmt.Println("OK", s, m.Params[1])
-						}
 					}
 				}
 
