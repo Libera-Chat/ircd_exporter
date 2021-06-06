@@ -195,8 +195,9 @@ func (c *Client) doConnection() {
 			case irc.RPL_MOTD:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
+					_ = s
 					if ok {
-						fmt.Println(s, servicesRE.FindSubmatch([]byte(m.Params[1])))
+						fmt.Printf("%q\n", servicesRE.FindSubmatch([]byte(m.Params[1])))
 					}
 				}
 
