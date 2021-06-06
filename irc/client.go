@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	numberRE = regexp.MustCompile(`\d+`)
+	numberRE   = regexp.MustCompile(`\d+`)
+	servicesRE = regexp.MustCompile(`^- Registered (\S+?): (\d+)`)
 )
 
 type Client struct {
@@ -195,7 +196,7 @@ func (c *Client) doConnection() {
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
-						fmt.Println("OK", s, m.Params[1])
+						fmt.Println(s, servicesRE.FindSubmatch([]byte(m.Params[1])))
 					}
 				}
 
