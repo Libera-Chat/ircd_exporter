@@ -199,7 +199,7 @@ func (c *Client) doConnection() {
 					if ok {
 						srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
 						if srm != nil {
-							fmt.Println(srm[2])
+							fmt.Println(string(srm[2]))
 						}
 					}
 				}
