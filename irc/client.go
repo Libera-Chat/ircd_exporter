@@ -190,6 +190,16 @@ func (c *Client) doConnection() {
 						}
 					}
 				}
+
+			case irc.RPL_MOTD:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
+					if ok {
+						fmt.Println("OK", s, m.Params[1])
+						}
+					}
+				}
+
 			case irc.RPL_ENDOFSTATS:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
