@@ -77,6 +77,9 @@ func (c *Client) doConnection() {
 		if len(statsReq) > 0 && len(statsReq[0].Nicks) > 0 && (len(statsRes.Nicks) == 0 && !statsRes.Timeout) {
 			return
 		}
+		if statsRes.RegChannels == 0 || statsRes.RegUsers == 0 {
+			return
+		}
 		for _, req := range statsReq {
 			req.response <- statsRes
 		}
