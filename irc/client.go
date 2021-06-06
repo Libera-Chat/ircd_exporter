@@ -202,13 +202,13 @@ func (c *Client) doConnection() {
 							fmt.Println(`OK`)
 							if string(srm[1]) == `users` {
 								susers, serr := strconv.Atoi(string(srm[2]))
-								if serr != nil {
+								if serr == nil {
 									fmt.Println(susers)
 								}
 							}
 							if string(srm[1]) == `channels` {
 								schannels, cerr := strconv.Atoi(string(srm[2]))
-								if cerr != nil {
+								if cerr == nil {
 									fmt.Println(schannels)
 								}
 							}
