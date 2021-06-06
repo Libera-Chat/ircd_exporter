@@ -117,6 +117,7 @@ func (c *Client) doConnection() {
 							}
 						}
 					}
+					doneRes()
 				}
 			case irc.RPL_LINKS:
 				if inProgress {
