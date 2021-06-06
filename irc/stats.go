@@ -13,10 +13,12 @@ type StatsRequest struct {
 }
 
 type StatsResponse struct {
-	Timeout  bool
-	Servers  map[string]*ServerStats
-	Channels int
-	Nicks    map[string]bool
+	Timeout     bool
+	Servers     map[string]*ServerStats
+	Channels    int
+	RegNicks    int
+	RegChannels int
+	Nicks       map[string]bool
 }
 
 type ServerStats struct {

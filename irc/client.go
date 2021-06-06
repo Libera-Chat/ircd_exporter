@@ -128,10 +128,10 @@ func (c *Client) doConnection() {
 							Command: irc.LUSERS,
 							Params:  []string{server, server},
 						}
-						inCh <- &irc.Message{
-							Command: irc.STATS,
-							Params:  []string{"m", server},
-						}
+						//						inCh <- &irc.Message{
+						//							Command: irc.STATS,
+						//							Params:  []string{"m", server},
+						//						}
 					} else {
 						// We're not going to query it, but we saw it there in links, best we can do
 						s.done = true
@@ -230,6 +230,11 @@ func (c *Client) doConnection() {
 				// Links response triggers the rest of the commands, above.
 				inCh <- &irc.Message{
 					Command: irc.LINKS,
+				}
+				// Get stats from services
+				inCh <- &irc.Message{
+					Command: irc.STATS,
+					Params:  []string{"t", "OperServ"},
 				}
 				if len(req.Nicks) > 0 {
 					inCh <- &irc.Message{
