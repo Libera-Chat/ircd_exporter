@@ -199,17 +199,16 @@ func (c *Client) doConnection() {
 					if ok {
 						srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
 						if srm != nil {
-							fmt.Println(`OK`)
 							if string(srm[1]) == `users` {
 								susers, serr := strconv.Atoi(string(srm[2]))
 								if serr == nil {
-									fmt.Println(susers)
+									statsRes.RegNicks = susers
 								}
 							}
 							if string(srm[1]) == `channels` {
 								schannels, cerr := strconv.Atoi(string(srm[2]))
 								if cerr == nil {
-									fmt.Println(schannels)
+									statsRes.RegChannels = schannels
 								}
 							}
 						}
