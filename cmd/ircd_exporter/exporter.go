@@ -57,6 +57,16 @@ var (
 		"Whether specified nicknames are online or not.",
 		[]string{"nick"}, nil,
 	)
+	command_total = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "command_usage_total"),
+		"command counts",
+		[]string{"server", "command", "user"}, nil,
+	)
+	command_bytes = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "command_usage_bytes"),
+		"command counts",
+		[]string{"server", "command"}, nil,
+	)
 
 	boolToFloat = map[bool]float64{
 		false: 0.0,
@@ -78,6 +88,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- users
 	ch <- channels
 	ch <- ison
+	ch <- command_total
+	ch <- command_bytes
 }
 
 // Collect gets stats from IRC and returns them as Prometheus metrics. It
@@ -136,6 +148,15 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 				ch <- prometheus.MustNewConstMetric(
 					latency, prometheus.GaugeValue, float64(stats.ResponseTime.Sub(stats.RequestTime))/float64(time.Second), server)
+				for command := range stats.Commands {
+					ch <- prometheus.MustNewConstMetric(
+						command_total, prometheus.GaugeValue, float64(stats.Commands[command].Clients), server, command, "clients")
+					ch <- prometheus.MustNewConstMetric(
+						command_total, prometheus.GaugeValue, float64(stats.Commands[command].Server), server, command, "server")
+					ch <- prometheus.MustNewConstMetric(
+						command_bytes, prometheus.GaugeValue, float64(stats.Commands[command].Bytes), server, command)
+
+				}
 			}
 		}
 	}

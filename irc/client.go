@@ -58,7 +58,7 @@ func (c *Client) doConnection() {
 	statsReq := []*StatsRequest{}
 	statsRes := StatsResponse{
 		Servers: make(map[string]*ServerStats),
-		Nicks: make(map[string]bool),
+		Nicks:   make(map[string]bool),
 	}
 	inProgress := false
 	var timeout *time.Time
@@ -82,7 +82,7 @@ func (c *Client) doConnection() {
 		statsReq = []*StatsRequest{}
 		statsRes = StatsResponse{
 			Servers: make(map[string]*ServerStats),
-			Nicks: make(map[string]bool),
+			Nicks:   make(map[string]bool),
 		}
 		inProgress = false
 		timeout = nil
@@ -110,6 +110,7 @@ func (c *Client) doConnection() {
 					statsRes.Servers[server] = &ServerStats{}
 					s := statsRes.Servers[server]
 					s.Up = false
+					s.Commands = make(map[string]*CommandStats)
 					// This assumes the server includes a distance in the /LINKS output, a
 					// common extension.
 					// TODO: We could just make /LINKS into a tree, would support ~all
@@ -126,6 +127,10 @@ func (c *Client) doConnection() {
 						inCh <- &irc.Message{
 							Command: irc.LUSERS,
 							Params:  []string{server, server},
+						}
+						inCh <- &irc.Message{
+							Command: irc.STATS,
+							Params:  []string{"m", server},
 						}
 					} else {
 						// We're not going to query it, but we saw it there in links, best we can do
@@ -167,6 +172,28 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
+					}
+				}
+			case irc.RPL_STATSCOMMANDS:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
+					if ok {
+						count, cerr := strconv.Atoi(m.Params[2])
+						rcount, rerr := strconv.Atoi(m.Params[2])
+						bytes, berr := strconv.Atoi(m.Params[2])
+						if cerr == nil && rerr == nil && berr == nil {
+							// s.Commands[m.Params[1]].Clients = count
+							s.Commands[m.Params[1]] = &CommandStats{}
+							s.Commands[m.Params[1]].Clients = count - rcount
+							s.Commands[m.Params[1]].Server = rcount
+							s.Commands[m.Params[1]].Bytes = bytes
+						}
+					}
+				}
+			case irc.RPL_ENDOFSTATS:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
+					if ok {
 						s.done = true
 						doneRes()
 					}
