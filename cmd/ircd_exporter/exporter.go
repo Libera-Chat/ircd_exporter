@@ -54,7 +54,7 @@ var (
 	)
 	registrations = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "services_registrations"),
-		"Number of users registered in the IRC network.",
+		"Number of users or channels registered in the IRC network.",
 		[]string{"type"}, nil,
 	)
 	ison = prometheus.NewDesc(
