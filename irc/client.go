@@ -199,6 +199,7 @@ func (c *Client) doConnection() {
 					if ok {
 						srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
 						if srm != nil {
+							fmt.Println(`OK`)
 							if string(srm[1]) == `users` {
 								susers, serr := strconv.Atoi(string(srm[2]))
 								if serr != nil {
