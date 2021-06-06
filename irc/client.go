@@ -129,10 +129,6 @@ func (c *Client) doConnection() {
 							Command: irc.LUSERS,
 							Params:  []string{server, server},
 						}
-						//						inCh <- &irc.Message{
-						//							Command: irc.STATS,
-						//							Params:  []string{"m", server},
-						//						}
 					} else {
 						// We're not going to query it, but we saw it there in links, best we can do
 						s.done = true
@@ -173,22 +169,8 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
-					}
-				}
-			case irc.RPL_STATSCOMMANDS:
-				if inProgress {
-					s, ok := statsRes.Servers[m.Prefix.Name]
-					if ok {
-						count, cerr := strconv.Atoi(m.Params[2])
-						rcount, rerr := strconv.Atoi(m.Params[2])
-						bytes, berr := strconv.Atoi(m.Params[2])
-						if cerr == nil && rerr == nil && berr == nil {
-							// s.Commands[m.Params[1]].Clients = count
-							s.Commands[m.Params[1]] = &CommandStats{}
-							s.Commands[m.Params[1]].Clients = count - rcount
-							s.Commands[m.Params[1]].Server = rcount
-							s.Commands[m.Params[1]].Bytes = bytes
-						}
+						s.done = true
+						doneRes()
 					}
 				}
 
@@ -213,16 +195,9 @@ func (c *Client) doConnection() {
 							}
 						}
 					}
+					doneRes()
 				}
 
-			case irc.RPL_ENDOFSTATS:
-				if inProgress {
-					s, ok := statsRes.Servers[m.Prefix.Name]
-					if ok {
-						s.done = true
-						doneRes()
-					}
-				}
 			case irc.RPL_ISON:
 				if inProgress {
 					ison := strings.Split(m.Params[1], " ")
