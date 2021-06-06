@@ -25,10 +25,4 @@ type ServerStats struct {
 	Up, done                  bool
 	RequestTime, ResponseTime time.Time
 	Distance, Users           int
-	Commands                  map[string]*CommandStats
-}
-type CommandStats struct {
-	Clients int
-	Server  int
-	Bytes   int
 }

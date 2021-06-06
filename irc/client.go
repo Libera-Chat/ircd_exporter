@@ -111,7 +111,6 @@ func (c *Client) doConnection() {
 					statsRes.Servers[server] = &ServerStats{}
 					s := statsRes.Servers[server]
 					s.Up = false
-					s.Commands = make(map[string]*CommandStats)
 					// This assumes the server includes a distance in the /LINKS output, a
 					// common extension.
 					// TODO: We could just make /LINKS into a tree, would support ~all
