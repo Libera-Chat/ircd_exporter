@@ -52,6 +52,11 @@ var (
 		"Number of channels created in the IRC network.",
 		nil, nil,
 	)
+	registrations = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "services_registrations"),
+		"Number of users registered in the IRC network.",
+		[]string{"type"}, nil,
+	)
 	ison = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "ison"),
 		"Whether specified nicknames are online or not.",
@@ -124,7 +129,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		// Global state
 		ch <- prometheus.MustNewConstMetric(
 			channels, prometheus.GaugeValue, float64(res.Channels))
-
+		ch <- prometheus.MustNewConstMetric(
+			registrations, prometheus.GaugeValue, float64(res.RegChannels), `channels`)
+		ch <- prometheus.MustNewConstMetric(
+			registrations, prometheus.GaugeValue, float64(res.RegUsers), `users`)
 		for nick, nickIson := range res.Nicks {
 			ch <- prometheus.MustNewConstMetric(
 				ison, prometheus.GaugeValue, boolToFloat[nickIson], nick)

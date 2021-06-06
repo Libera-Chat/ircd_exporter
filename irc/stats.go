@@ -16,7 +16,7 @@ type StatsResponse struct {
 	Timeout     bool
 	Servers     map[string]*ServerStats
 	Channels    int
-	RegNicks    int
+	RegUsers    int
 	RegChannels int
 	Nicks       map[string]bool
 }

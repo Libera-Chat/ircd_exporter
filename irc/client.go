@@ -202,7 +202,7 @@ func (c *Client) doConnection() {
 							if string(srm[1]) == `users` {
 								susers, serr := strconv.Atoi(string(srm[2]))
 								if serr == nil {
-									statsRes.RegNicks = susers
+									statsRes.RegUsers = susers
 								}
 							}
 							if string(srm[1]) == `channels` {
