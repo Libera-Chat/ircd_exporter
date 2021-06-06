@@ -98,27 +98,23 @@ func (c *Client) doConnection() {
 			switch m.Command {
 			case irc.RPL_MOTD:
 				if inProgress {
-					s, ok := statsRes.Servers[m.Prefix.Name]
-					_ = s
-					if ok {
-						srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
-						if srm != nil {
-							if string(srm[1]) == `users` {
-								susers, serr := strconv.Atoi(string(srm[2]))
-								if serr == nil {
-									statsRes.RegUsers = susers
-								}
+					srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
+					if srm != nil {
+						if string(srm[1]) == `users` {
+							susers, serr := strconv.Atoi(string(srm[2]))
+							if serr == nil {
+								statsRes.RegUsers = susers
 							}
-							if string(srm[1]) == `channels` {
-								schannels, cerr := strconv.Atoi(string(srm[2]))
-								if cerr == nil {
-									statsRes.RegChannels = schannels
-								}
+						}
+						if string(srm[1]) == `channels` {
+							schannels, cerr := strconv.Atoi(string(srm[2]))
+							if cerr == nil {
+								statsRes.RegChannels = schannels
 							}
 						}
 					}
-					doneRes()
 				}
+
 			case irc.RPL_LINKS:
 				if inProgress {
 					server := m.Params[1]
