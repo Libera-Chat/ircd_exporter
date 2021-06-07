@@ -144,7 +144,7 @@ func (c *Client) doConnection() {
 					if !statsReq[0].Local || server == c.Server {
 						s.RequestTime = time.Now()
 						inCh <- &irc.Message{
-							Command: irc.LUSERS,
+							Command: irc.USERS,
 							Params:  []string{server, server},
 						}
 					} else {
@@ -173,9 +173,6 @@ func (c *Client) doConnection() {
 					}
 				}
 			case irc.RPL_LUSERME:
-				// Note we could also look at the Hybrid specific 265 (RPL_LOCALUSERS,
-				// https://github.com/grawity/irc-docs/blob/master/alien.net.au/irc2numerics.def#L845)
-				// Would avoid the text parsing. But this should work on any RFC1459 IRCd.
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
@@ -191,7 +188,22 @@ func (c *Client) doConnection() {
 						doneRes()
 					}
 				}
-
+			case irc.RPL_LOCALUSERS:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
+					if ok {
+						s.ResponseTime = time.Now()
+						s.Up = true
+						users, err := strconv.Atoi(m.Params[1])
+						if err == nil {
+							s.Users = users
+						} else {
+							log.Printf("failed to parse user count from: %v", m)
+						}
+						s.done = true
+						doneRes()
+					}
+				}
 			case irc.RPL_ISON:
 				if inProgress {
 					ison := strings.Split(m.Params[1], " ")
@@ -227,6 +239,9 @@ func (c *Client) doConnection() {
 					Params:  []string{"OperServ"},
 				}
 				// Links response triggers the rest of the commands, above.
+				inCh <- &irc.Message{
+					Command: irc.LUSERS,
+				}
 				inCh <- &irc.Message{
 					Command: irc.LINKS,
 				}
