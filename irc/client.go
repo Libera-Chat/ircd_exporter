@@ -17,6 +17,7 @@ import (
 var (
 	numberRE   = regexp.MustCompile(`\d+`)
 	servicesRE = regexp.MustCompile(`^- Registered (\S+?): (\d+)`)
+	commandsRE = regexp.MustCompile(`^(PRIVMSG)$`)
 )
 
 type Client struct {
@@ -230,15 +231,18 @@ func (c *Client) doConnection() {
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
-						count, cerr := strconv.Atoi(m.Params[2])
-						rcount, rerr := strconv.Atoi(m.Params[2])
-						bytes, berr := strconv.Atoi(m.Params[2])
-						if cerr == nil && rerr == nil && berr == nil {
-							// s.Commands[m.Params[1]].Clients = count
-							s.Commands[m.Params[1]] = &CommandStats{}
-							s.Commands[m.Params[1]].Clients = count - rcount
-							s.Commands[m.Params[1]].Server = rcount
-							s.Commands[m.Params[1]].Bytes = bytes
+						x := commandsRE.MatchString(m.Params[1])
+						if x {
+							count, cerr := strconv.Atoi(m.Params[2])
+							rcount, rerr := strconv.Atoi(m.Params[2])
+							bytes, berr := strconv.Atoi(m.Params[2])
+							if cerr == nil && rerr == nil && berr == nil {
+								// s.Commands[m.Params[1]].Clients = count
+								s.Commands[m.Params[1]] = &CommandStats{}
+								s.Commands[m.Params[1]].Clients = count - rcount
+								s.Commands[m.Params[1]].Server = rcount
+								s.Commands[m.Params[1]].Bytes = bytes
+							}
 						}
 					}
 				}
