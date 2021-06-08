@@ -234,8 +234,8 @@ func (c *Client) doConnection() {
 						x := commandsRE.MatchString(m.Params[1])
 						if x {
 							count, cerr := strconv.Atoi(m.Params[2])
-							rcount, rerr := strconv.Atoi(m.Params[2])
-							bytes, berr := strconv.Atoi(m.Params[2])
+							rcount, rerr := strconv.Atoi(m.Params[3])
+							bytes, berr := strconv.Atoi(m.Params[4])
 							if cerr == nil && rerr == nil && berr == nil {
 								// s.Commands[m.Params[1]].Clients = count
 								s.Commands[m.Params[1]] = &CommandStats{}
