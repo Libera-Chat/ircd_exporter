@@ -205,7 +205,6 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
-						s.done = true
 						doneRes()
 					}
 				}
@@ -224,6 +223,14 @@ func (c *Client) doConnection() {
 			case irc.ERR_NOSUCHSERVER:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Params[1]]
+					if ok {
+						s.done = true
+						doneRes()
+					}
+				}
+			case irc.RPL_ENDOFSTATS:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
 						s.done = true
 						doneRes()
