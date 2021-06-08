@@ -189,7 +189,6 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
-						s.done = true
 						doneRes()
 					}
 				}
