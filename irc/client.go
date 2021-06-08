@@ -204,7 +204,6 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
-						doneRes()
 					}
 				}
 			case irc.RPL_ISON:
