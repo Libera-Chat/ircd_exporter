@@ -96,6 +96,25 @@ func (c *Client) doConnection() {
 				continue
 			}
 			switch m.Command {
+			case irc.RPL_MOTD:
+				if inProgress {
+					srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
+					if srm != nil {
+						if string(srm[1]) == `users` {
+							susers, serr := strconv.Atoi(string(srm[2]))
+							if serr == nil {
+								statsRes.RegUsers = susers
+							}
+						}
+						if string(srm[1]) == `channels` {
+							schannels, cerr := strconv.Atoi(string(srm[2]))
+							if cerr == nil {
+								statsRes.RegChannels = schannels
+							}
+						}
+					}
+				}
+
 			case irc.RPL_LINKS:
 				if inProgress {
 					server := m.Params[1]
@@ -126,13 +145,13 @@ func (c *Client) doConnection() {
 					if !statsReq[0].Local || server == c.Server {
 						s.RequestTime = time.Now()
 						inCh <- &irc.Message{
-							Command: irc.LUSERS,
+							Command: irc.USERS,
 							Params:  []string{server, server},
 						}
-						//						inCh <- &irc.Message{
-						//							Command: irc.STATS,
-						//							Params:  []string{"m", server},
-						//						}
+						inCh <- &irc.Message{
+							Command: irc.STATS,
+							Params:  []string{"m", server},
+						}
 					} else {
 						// We're not going to query it, but we saw it there in links, best we can do
 						s.done = true
@@ -159,9 +178,6 @@ func (c *Client) doConnection() {
 					}
 				}
 			case irc.RPL_LUSERME:
-				// Note we could also look at the Hybrid specific 265 (RPL_LOCALUSERS,
-				// https://github.com/grawity/irc-docs/blob/master/alien.net.au/irc2numerics.def#L845)
-				// Would avoid the text parsing. But this should work on any RFC1459 IRCd.
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
@@ -173,52 +189,22 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
+						s.done = true
+						doneRes()
 					}
 				}
-			case irc.RPL_STATSCOMMANDS:
+			case irc.RPL_LOCALUSERS:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
-						count, cerr := strconv.Atoi(m.Params[2])
-						rcount, rerr := strconv.Atoi(m.Params[2])
-						bytes, berr := strconv.Atoi(m.Params[2])
-						if cerr == nil && rerr == nil && berr == nil {
-							// s.Commands[m.Params[1]].Clients = count
-							s.Commands[m.Params[1]] = &CommandStats{}
-							s.Commands[m.Params[1]].Clients = count - rcount
-							s.Commands[m.Params[1]].Server = rcount
-							s.Commands[m.Params[1]].Bytes = bytes
+						s.ResponseTime = time.Now()
+						s.Up = true
+						users, err := strconv.Atoi(m.Params[1])
+						if err == nil {
+							s.Users = users
+						} else {
+							log.Printf("failed to parse user count from: %v", m)
 						}
-					}
-				}
-
-			case irc.RPL_MOTD:
-				if inProgress {
-					s, ok := statsRes.Servers[m.Prefix.Name]
-					_ = s
-					if ok {
-						srm := servicesRE.FindSubmatch([]byte(m.Params[1]))
-						if srm != nil {
-							if string(srm[1]) == `users` {
-								susers, serr := strconv.Atoi(string(srm[2]))
-								if serr == nil {
-									statsRes.RegUsers = susers
-								}
-							}
-							if string(srm[1]) == `channels` {
-								schannels, cerr := strconv.Atoi(string(srm[2]))
-								if cerr == nil {
-									statsRes.RegChannels = schannels
-								}
-							}
-						}
-					}
-				}
-
-			case irc.RPL_ENDOFSTATS:
-				if inProgress {
-					s, ok := statsRes.Servers[m.Prefix.Name]
-					if ok {
 						s.done = true
 						doneRes()
 					}
@@ -252,14 +238,17 @@ func (c *Client) doConnection() {
 				statsRes.Timeout = true
 				doneRes()
 			} else if !inProgress {
-				// Links response triggers the rest of the commands, above.
-				inCh <- &irc.Message{
-					Command: irc.LINKS,
-				}
 				// Get stats from services
 				inCh <- &irc.Message{
 					Command: irc.MOTD,
 					Params:  []string{"OperServ"},
+				}
+				// Links response triggers the rest of the commands, above.
+				inCh <- &irc.Message{
+					Command: irc.LUSERS,
+				}
+				inCh <- &irc.Message{
+					Command: irc.LINKS,
 				}
 				if len(req.Nicks) > 0 {
 					inCh <- &irc.Message{

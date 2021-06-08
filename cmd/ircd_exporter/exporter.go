@@ -54,7 +54,7 @@ var (
 	)
 	registrations = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "services_registrations"),
-		"Number of users registered in the IRC network.",
+		"Number of users or channels registered in the IRC network.",
 		[]string{"type"}, nil,
 	)
 	ison = prometheus.NewDesc(
@@ -72,7 +72,6 @@ var (
 		"command counts",
 		[]string{"server", "command"}, nil,
 	)
-
 	boolToFloat = map[bool]float64{
 		false: 0.0,
 		true:  1.0,
@@ -95,6 +94,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- ison
 	ch <- command_total
 	ch <- command_bytes
+	ch <- registrations
 }
 
 // Collect gets stats from IRC and returns them as Prometheus metrics. It
@@ -163,7 +163,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 						command_total, prometheus.GaugeValue, float64(stats.Commands[command].Server), server, command, "server")
 					ch <- prometheus.MustNewConstMetric(
 						command_bytes, prometheus.GaugeValue, float64(stats.Commands[command].Bytes), server, command)
-
 				}
 			}
 		}
