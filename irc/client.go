@@ -17,6 +17,7 @@ import (
 var (
 	numberRE   = regexp.MustCompile(`\d+`)
 	servicesRE = regexp.MustCompile(`^- Registered (\S+?): (\d+)`)
+	commandsRE = regexp.MustCompile(`^(PRIVMSG)$`)
 )
 
 type Client struct {
@@ -189,7 +190,6 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
-						s.done = true
 						doneRes()
 					}
 				}
@@ -205,8 +205,6 @@ func (c *Client) doConnection() {
 						} else {
 							log.Printf("failed to parse user count from: %v", m)
 						}
-						s.done = true
-						doneRes()
 					}
 				}
 			case irc.RPL_ISON:
@@ -224,6 +222,33 @@ func (c *Client) doConnection() {
 			case irc.ERR_NOSUCHSERVER:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Params[1]]
+					if ok {
+						s.done = true
+						doneRes()
+					}
+				}
+			case irc.RPL_STATSCOMMANDS:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
+					if ok {
+						x := commandsRE.MatchString(m.Params[1])
+						if x {
+							count, cerr := strconv.Atoi(m.Params[2])
+							rcount, rerr := strconv.Atoi(m.Params[4])
+							bytes, berr := strconv.Atoi(m.Params[3])
+							if cerr == nil && rerr == nil && berr == nil {
+								// s.Commands[m.Params[1]].Clients = count
+								s.Commands[m.Params[1]] = &CommandStats{}
+								s.Commands[m.Params[1]].Clients = count - rcount
+								s.Commands[m.Params[1]].Server = rcount
+								s.Commands[m.Params[1]].Bytes = bytes
+							}
+						}
+					}
+				}
+			case irc.RPL_ENDOFSTATS:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
 						s.done = true
 						doneRes()
