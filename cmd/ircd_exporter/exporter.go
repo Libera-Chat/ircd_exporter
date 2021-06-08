@@ -158,11 +158,11 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 					latency, prometheus.GaugeValue, float64(stats.ResponseTime.Sub(stats.RequestTime))/float64(time.Second), server)
 				for command := range stats.Commands {
 					ch <- prometheus.MustNewConstMetric(
-						command_total, prometheus.GaugeValue, float64(stats.Commands[command].Clients), server, command, "clients")
+						command_total, prometheus.CounterValue, float64(stats.Commands[command].Clients), server, command, "clients")
 					ch <- prometheus.MustNewConstMetric(
-						command_total, prometheus.GaugeValue, float64(stats.Commands[command].Server), server, command, "server")
+						command_total, prometheus.CounterValue, float64(stats.Commands[command].Server), server, command, "server")
 					ch <- prometheus.MustNewConstMetric(
-						command_bytes, prometheus.GaugeValue, float64(stats.Commands[command].Bytes), server, command)
+						command_bytes, prometheus.CounterValue, float64(stats.Commands[command].Bytes), server, command)
 				}
 			}
 		}
