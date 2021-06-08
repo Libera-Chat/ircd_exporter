@@ -226,6 +226,22 @@ func (c *Client) doConnection() {
 						doneRes()
 					}
 				}
+			case irc.RPL_STATSCOMMANDS:
+				if inProgress {
+					s, ok := statsRes.Servers[m.Prefix.Name]
+					if ok {
+						count, cerr := strconv.Atoi(m.Params[2])
+						rcount, rerr := strconv.Atoi(m.Params[2])
+						bytes, berr := strconv.Atoi(m.Params[2])
+						if cerr == nil && rerr == nil && berr == nil {
+							// s.Commands[m.Params[1]].Clients = count
+							s.Commands[m.Params[1]] = &CommandStats{}
+							s.Commands[m.Params[1]].Clients = count - rcount
+							s.Commands[m.Params[1]].Server = rcount
+							s.Commands[m.Params[1]].Bytes = bytes
+						}
+					}
+				}
 			case irc.RPL_ENDOFSTATS:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
