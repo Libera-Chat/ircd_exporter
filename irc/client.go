@@ -246,12 +246,25 @@ func (c *Client) doConnection() {
 						}
 					}
 				}
+
 			case irc.RPL_ENDOFSTATS:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
 					if ok {
 						s.done = true
 						doneRes()
+					}
+				}
+			case `727`:
+				if inProgress {
+					if m.Prefix.Name == c.Server {
+						mlocal, lerr := strconv.Atoi(m.Params[1])
+						mremote, rerr := strconv.Atoi(m.Params[2])
+						if lerr == nil && rerr == nil {
+							statsRes.MatrixUsers = mlocal + mremote
+						} else {
+							log.Printf("failed to Matrix user count from: %v", m)
+						}
 					}
 				}
 			}
@@ -271,6 +284,10 @@ func (c *Client) doConnection() {
 				// Links response triggers the rest of the commands, above.
 				inCh <- &irc.Message{
 					Command: irc.LUSERS,
+				}
+				inCh <- &irc.Message{
+					Command: `TESTMASK`,
+					Params:  []string{`*!*@2001:470:69fc:105::/64`},
 				}
 				inCh <- &irc.Message{
 					Command: irc.LINKS,

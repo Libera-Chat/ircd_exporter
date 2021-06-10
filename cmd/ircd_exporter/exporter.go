@@ -72,6 +72,11 @@ var (
 		"command counts",
 		[]string{"server", "command"}, nil,
 	)
+	matrixUsers = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "matrix_users"),
+		"Number of users on the Matrix bridge",
+		nil, nil,
+	)
 	boolToFloat = map[bool]float64{
 		false: 0.0,
 		true:  1.0,
@@ -95,6 +100,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- command_total
 	ch <- command_bytes
 	ch <- registrations
+	ch <- matrixUsers
 }
 
 // Collect gets stats from IRC and returns them as Prometheus metrics. It
@@ -127,6 +133,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 	} else {
 		// Global state
+		ch <- prometheus.MustNewConstMetric(
+			matrixUsers, prometheus.GaugeValue, float64(res.MatrixUsers))
 		ch <- prometheus.MustNewConstMetric(
 			channels, prometheus.GaugeValue, float64(res.Channels))
 		ch <- prometheus.MustNewConstMetric(
