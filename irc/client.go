@@ -201,10 +201,10 @@ func (c *Client) doConnection() {
 						staff, err := strconv.Atoi(x)
 						if err == nil {
 							statsRes.Staff = staff
+							doneRes()
 						} else {
 							log.Printf("failed to parse oper count from: %v", m)
 						}
-						doneRes()
 					}
 				}
 			case irc.RPL_LOCALUSERS:
