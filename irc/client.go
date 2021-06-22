@@ -17,6 +17,7 @@ import (
 var (
 	numberRE   = regexp.MustCompile(`\d+`)
 	servicesRE = regexp.MustCompile(`^- Registered (\S+?): (\d+)`)
+	statspRE   = regexp.MustCompile(`(\d+) staff members`)
 	commandsRE = regexp.MustCompile(`^(PRIVMSG)$`)
 )
 
@@ -193,6 +194,19 @@ func (c *Client) doConnection() {
 						doneRes()
 					}
 				}
+			case `249`:
+				if inProgress {
+					if m.Prefix.Name == c.Server {
+						x := statspRE.FindString(m.Params[1])
+						staff, err := strconv.Atoi(x)
+						if err == nil {
+							statsRes.Staff = staff
+						} else {
+							log.Printf("failed to parse oper count from: %v", m)
+						}
+						doneRes()
+					}
+				}
 			case irc.RPL_LOCALUSERS:
 				if inProgress {
 					s, ok := statsRes.Servers[m.Prefix.Name]
@@ -284,6 +298,10 @@ func (c *Client) doConnection() {
 				// Links response triggers the rest of the commands, above.
 				inCh <- &irc.Message{
 					Command: irc.LUSERS,
+				}
+				inCh <- &irc.Message{
+					Command: irc.STATS,
+					Params:  []string{`p`},
 				}
 				inCh <- &irc.Message{
 					Command: `TESTMASK`,
