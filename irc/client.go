@@ -203,7 +203,6 @@ func (c *Client) doConnection() {
 								staff, err := strconv.Atoi(string(sprm[1]))
 								if err == nil {
 									statsRes.Staff = staff
-									doneRes()
 								} else {
 									log.Printf("failed to parse oper count from: %v", m)
 								}
