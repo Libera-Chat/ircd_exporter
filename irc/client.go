@@ -197,14 +197,16 @@ func (c *Client) doConnection() {
 			case `249`:
 				if inProgress {
 					if m.Prefix.Name == c.Server {
-						sprm := statspRE.FindSubmatch([]byte(m.Params[1]))
-						if sprm != nil {
-							staff, err := strconv.Atoi(string(sprm[1]))
-							if err == nil {
-								statsRes.Staff = staff
-								doneRes()
-							} else {
-								log.Printf("failed to parse oper count from: %v", m)
+						if m.Params[1] == `p` {
+							sprm := statspRE.FindSubmatch([]byte(m.Params[2]))
+							if sprm != nil {
+								staff, err := strconv.Atoi(string(sprm[1]))
+								if err == nil {
+									statsRes.Staff = staff
+									doneRes()
+								} else {
+									log.Printf("failed to parse oper count from: %v", m)
+								}
 							}
 						}
 					}
