@@ -19,6 +19,7 @@ type StatsResponse struct {
 	RegUsers    int
 	RegChannels int
 	MatrixUsers int
+	Staff       int
 	Nicks       map[string]bool
 }
 

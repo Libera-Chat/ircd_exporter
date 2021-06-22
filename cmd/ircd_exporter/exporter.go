@@ -77,6 +77,11 @@ var (
 		"Number of users on the Matrix bridge",
 		nil, nil,
 	)
+	statspUsers = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "statsp_users"),
+		"Number of staff on call",
+		nil, nil,
+	)
 	boolToFloat = map[bool]float64{
 		false: 0.0,
 		true:  1.0,
@@ -135,6 +140,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		// Global state
 		ch <- prometheus.MustNewConstMetric(
 			matrixUsers, prometheus.GaugeValue, float64(res.MatrixUsers))
+		ch <- prometheus.MustNewConstMetric(
+			statspUsers, prometheus.GaugeValue, float64(res.Staff))
 		ch <- prometheus.MustNewConstMetric(
 			channels, prometheus.GaugeValue, float64(res.Channels))
 		ch <- prometheus.MustNewConstMetric(
